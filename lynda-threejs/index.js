@@ -102,3 +102,4 @@ function update(renderer, scene, camera) {
 }
 
 var scene = init();
+console.log(scene);
