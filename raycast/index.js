@@ -9,25 +9,36 @@ function init() {
   // create scene
   var scene = new THREE.Scene();
   // enable dat GUI lib
-  // var gui = new dat.GUI();
-
-  // add fog to scene
-  scene.fog = new THREE.FogExp2('#fff', 0.02);
+  var gui = new dat.GUI();
 
   // initialize several scene components and set props
-  var box = getBox(1, 1, 1, 'lightcoral');
-  var groundPlane = getPlane(100, '#666');
-  var pointLight = getPointLight('#fff', 1);
+  // var box = getBox(1, 1, 1, 'yellowgreen');
+  var groundPlane = getPlane(1000, 'blanchedalmond');
+  var pointLight = getPointLight('#fff', .22);
   var lightSphere = getSphere(0.05, '#fff');
+  var hemisphereLight = getHemisphereLight('royalblue', 'tan');
+  var grid = getBoxGrid(10, 1.5);
 
-  scene.add(box);
+  // add scene objects
+  //scene.add(box);
   scene.add(groundPlane);
   scene.add(pointLight);
+  scene.add(hemisphereLight);
+  scene.add(grid);
   pointLight.add(lightSphere);
-  
-  box.position.y = box.geometry.parameters.height / 2;
+
+  // set props
+  //box.position.y = box.geometry.parameters.height / 2;
   groundPlane.rotation.x = Math.PI / 2;
-  pointLight.position.y = 2;
+  pointLight.position.x = 40;
+  pointLight.position.y = 100;
+  pointLight.position.z = 100;
+
+  // bind dat gui to scene object props
+  gui.add(pointLight, 'intensity', 0, 1);
+  gui.add(pointLight.position, 'x', -100, 100);
+  gui.add(pointLight.position, 'y', 0, 100);
+  gui.add(pointLight.position, 'z', -100, 100);
 
   // create perspective camera and set position
   var camera = new THREE.PerspectiveCamera(
@@ -37,14 +48,16 @@ function init() {
     1000
   );
 
-  camera.position.x = 1;
-  camera.position.y = 2;
-  camera.position.z = 5;
+  camera.position.x = -10;
+  camera.position.y = 5;
+  camera.position.z = 10;
   // camera view target
   camera.lookAt(new THREE.Vector3(0, 0, 0));
 
   // create renderer
-  var renderer = new THREE.WebGLRenderer();
+  var renderer = new THREE.WebGLRenderer({
+    antialias: true
+  });
   renderer.shadowMap.enabled = true;
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor('#fff');
@@ -75,6 +88,28 @@ function getBox(w, h, d, c) {
   return mesh;
 }
 
+// create a grid of boxes
+function getBoxGrid(amount, separationMultiplier) {
+  var group = new THREE.Group();
+
+  for (var i = 0; i < amount; i++) {
+    var box = getBox(1, 1, 1, 'lightseagreen');
+    box.position.x = i * separationMultiplier;
+    box.position.y = box.geometry.parameters.height / 2;
+    group.add(box);
+  }
+
+  group.position.x = -(separationMultiplier * (amount - 1)) / 2;
+  group.position.z = -(separationMultiplier * (amount - 1)) / 2;
+
+  return group;
+}
+
+// create a hemispherical dome light
+function getHemisphereLight(skyColor, groundColor) {
+  return new THREE.HemisphereLight(skyColor, groundColor);
+}
+
 // create a simple plane
 function getPlane(s, c) {
   var geometry = new THREE.PlaneGeometry(s, s);
@@ -96,6 +131,8 @@ function getPlane(s, c) {
 function getPointLight(color, intensity) {
   var light = new THREE.PointLight(color, intensity);
   light.castShadow = true;
+  light.shadowMapWidth = 4096;
+  light.shadowMapHeight = 4096;
 
   return light;
 }
