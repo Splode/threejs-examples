@@ -164,23 +164,26 @@ function getSphere(r, c) {
 
 // raycasting capture events
 function onDocumentMouseDown(event, camera, renderer, objects) {
+  // create raycaster and mouse object
   var raycaster = new THREE.Raycaster();
   var mouse = new THREE.Vector2();
 
   event.preventDefault();
 
+  // normalize mouse position relative to browser window
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
+  // set raycaster origin
   raycaster.setFromCamera(mouse, camera);
-  console.log(mouse);
 
+  // get raycaster intersection and act upon first (closest) object
   var intersects = raycaster.intersectObjects(objects, true);
-  console.log(intersects, typeof intersects);
   if (intersects.length > 0) {
     var obj = intersects[0];
     var id = obj.object.uuid;
-    console.log(id);
+    
+    // set html content to selected object uuid
     document.getElementById('objId').innerHTML = id;
   }
 }
