@@ -8,6 +8,8 @@ function init() {
 
   // create scene
   var scene = new THREE.Scene();
+  // enable dat GUI lib
+  // var gui = new dat.GUI();
 
   // add fog to scene
   scene.fog = new THREE.FogExp2('#fff', 0.02);
@@ -43,12 +45,16 @@ function init() {
 
   // create renderer
   var renderer = new THREE.WebGLRenderer();
+  renderer.shadowMap.enabled = true;
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor('#fff');
   document.getElementById('webgl').appendChild(renderer.domElement);
 
+  // load orbit controls lib
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+
   // call animation update function
-  update(renderer, scene, camera);
+  update(renderer, scene, camera, controls);
 
   return scene;
 }
@@ -64,9 +70,12 @@ function getBox(w, h, d, c) {
     material
   );
 
+  mesh.castShadow = true;
+
   return mesh;
 }
 
+// create a simple plane
 function getPlane(s, c) {
   var geometry = new THREE.PlaneGeometry(s, s);
   var material = new THREE.MeshPhongMaterial({
@@ -78,12 +87,15 @@ function getPlane(s, c) {
     material
   );
 
+  mesh.receiveShadow = true;
+
   return mesh;
 }
 
 // create a simple point light
 function getPointLight(color, intensity) {
   var light = new THREE.PointLight(color, intensity);
+  light.castShadow = true;
 
   return light;
 }
@@ -103,14 +115,17 @@ function getSphere(r, c) {
 }
 
 // animation update
-function update(renderer, scene, camera) {
+function update(renderer, scene, camera, controls) {
   renderer.render(
     scene,
     camera
   );
 
+  // call to update orbit controls
+  controls.update();
+
   requestAnimationFrame(function () {
-    update(renderer, scene, camera);
+    update(renderer, scene, camera, controls);
   });
 
 }

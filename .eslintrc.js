@@ -3,7 +3,8 @@ module.exports = {
         "browser": true
     },
     "globals": {
-        "THREE": true
+        "THREE": true,
+        "dat": true
     },
     "extends": "eslint:recommended",
     "rules": {
@@ -20,7 +21,7 @@ module.exports = {
         ],
         "linebreak-style": [
             "error",
-            "unix"
+            "windows"
         ],
         "quotes": [
             "error",
