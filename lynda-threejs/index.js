@@ -2,6 +2,7 @@ function init() {
   console.log(THREE);
 
   var scene = new THREE.Scene();
+  var gui = new dat.GUI();
 
   var enableFog = false;
   if (enableFog) {
@@ -23,6 +24,10 @@ function init() {
   box.position.y = box.geometry.parameters.height / 2;
   plane.rotation.x = Math.PI / 2;
   pointLight.position.y = 2;
+  pointLight.intensity = 1.5;
+
+  gui.add(pointLight, 'intensity', 0, 10);
+  gui.add(pointLight.position, 'y', 0, 5);
 
   var camera = new THREE.PerspectiveCamera(
     45,
@@ -38,11 +43,14 @@ function init() {
   camera.lookAt(new THREE.Vector3(0, 0, 0));
 
   var renderer = new THREE.WebGLRenderer();
+  renderer.shadowMap.enabled = true;
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setClearColor('#666');
   document.getElementById('webgl').appendChild(renderer.domElement);
 
-  update(renderer, scene, camera);
+  var controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+  update(renderer, scene, camera, controls);
 
   return scene;
 }
@@ -56,7 +64,30 @@ function getBox(w, h, d) {
     geometry,
     material
   );
+  mesh.castShadow = true;
   return mesh;
+}
+
+function getBoxGrid(amount, separationMultiplier) {
+  var group = new THREE.Group();
+
+  for (var i = 0; i < amount; i++) {
+    var obj = getBox(1, 1, 1);
+    obj.position.x = i * separationMultiplier;
+    obj.position.y = obj.geometry.parameters.height / 2;
+    group.add(obj);
+
+    for (var j = 0; j < amount; j++) {
+      var obj = getBox(1, 1, 1);
+      obj.position.x = i * separationMultiplier;
+      obj.position.y = obj.geometry.parameters.height / 2;
+      obj.position.z = j * separationMultiplier;
+      group.add(obj);
+    }
+    
+    group.position.x = -(separationMultiplier * (amount - 1)) / 2;
+    group.position.z = -(separationMultiplier * (amount - 1)) / 2;
+  }
 }
 
 function getSphere(r) {
@@ -81,23 +112,27 @@ function getPlane(size) {
     geometry,
     material
   );
+  mesh.receiveShadow = true;
   return mesh;
 }
 
 function getPointLight(color, intensity) {
   var light = new THREE.PointLight(color, intensity);
+  light.castShadow = true;
 
   return light;
 }
 
-function update(renderer, scene, camera) {
+function update(renderer, scene, camera, controls) {
   renderer.render(
     scene,
     camera
   );
 
+  controls.update();
+
   requestAnimationFrame(function () {
-    update(renderer, scene, camera);
+    update(renderer, scene, camera, controls);
   });
 }
 
