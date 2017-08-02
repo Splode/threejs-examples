@@ -10,9 +10,12 @@ function init() {
   var scene = new THREE.Scene();
   // enable dat GUI lib
   var gui = new dat.GUI();
+  // create raycaster
+  // var raycaster = new THREE.Raycaster();
+  // var mouse = new THREE.Vector2();
 
   // initialize several scene components and set props
-  // var box = getBox(1, 1, 1, 'yellowgreen');
+  var box = getBox(1, 1, 1, 'yellowgreen');
   var groundPlane = getPlane(1000, 'blanchedalmond');
   var pointLight = getPointLight('#fff', .22);
   var lightSphere = getSphere(0.05, '#fff');
@@ -20,7 +23,7 @@ function init() {
   var grid = getBoxGrid(10, 1.5);
 
   // add scene objects
-  //scene.add(box);
+  scene.add(box);
   scene.add(groundPlane);
   scene.add(pointLight);
   scene.add(hemisphereLight);
@@ -28,7 +31,7 @@ function init() {
   pointLight.add(lightSphere);
 
   // set props
-  //box.position.y = box.geometry.parameters.height / 2;
+  box.position.y = box.geometry.parameters.height / 2;
   groundPlane.rotation.x = Math.PI / 2;
   pointLight.position.x = 40;
   pointLight.position.y = 100;
@@ -68,6 +71,14 @@ function init() {
 
   // call animation update function
   update(renderer, scene, camera, controls);
+
+  // add event listeners for raycasting
+  document.addEventListener('mousedown', function () {
+    onDocumentMouseDown(event, camera, renderer, scene.children);
+  }, false);
+  document.addEventListener('touchstart', function () {
+    onDocumentTouchStart(event, camera, renderer, scene.children);
+  }, false);
 
   return scene;
 }
@@ -149,6 +160,38 @@ function getSphere(r, c) {
   );
 
   return mesh;
+}
+
+// raycasting capture events
+function onDocumentMouseDown(event, camera, renderer, objects) {
+  var raycaster = new THREE.Raycaster();
+  var mouse = new THREE.Vector2();
+
+  event.preventDefault();
+
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  console.log(mouse);
+
+  var intersects = raycaster.intersectObjects(objects, true);
+  console.log(intersects, typeof intersects);
+  if (intersects.length > 0) {
+    var obj = intersects[0];
+    var id = obj.object.uuid;
+    console.log(id);
+    document.getElementById('objId').innerHTML = id;
+  }
+}
+
+function onDocumentTouchStart(event, camera, renderer, objects) {
+  event.preventDefault();
+
+  event.clientX = event.touches[0].clientX;
+  event.clientY = event.touches[0].clientY;
+
+  onDocumentMouseDown(event, camera, renderer, objects);
 }
 
 // animation update
