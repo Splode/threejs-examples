@@ -1,7 +1,7 @@
 Physijs.scripts.worker = './lib/physijs_worker.js';
 Physijs.scripts.ammo = 'ammo.js';
 
-var boxOne, camera, groundPlane, ground, ground_material, initScene, light, render, renderer, scene;
+var boxOne, camera, controls, groundPlane, ground, ground_material, initScene, light, render, renderer, scene;
 
 initScene = function () {
   // renderer
@@ -9,6 +9,7 @@ initScene = function () {
     antialias: true
   });
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor('#fff');
   renderer.shadowMap.enabled = true;
   renderer.shadowMapSoft = true;
   document.getElementById('webgl').appendChild(renderer.domElement);
@@ -29,6 +30,9 @@ initScene = function () {
   camera.position.set(60, 40, 60);
   camera.lookAt(scene.position);
   scene.add(camera);
+
+  // load orbit controls lib
+  controls = new THREE.OrbitControls(camera, renderer.domElement);
 
   // Light
   light = new THREE.DirectionalLight('#fff');
@@ -122,7 +126,7 @@ function spawnBox () {
 render = function () {
   scene.simulate();
   renderer.render(scene, camera);
-  requestAnimationFrame(render);
+  requestAnimationFrame(render, controls);
 };
 
 // create scene on load
